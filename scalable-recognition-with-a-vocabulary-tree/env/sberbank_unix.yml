@@ -1,0 +1,22 @@
+name: cbir
+channels:
+  - defaults
+dependencies:
+  - pip
+  - pygraphviz
+  - pip:
+    - future
+    - h5py
+    - jupyterlab
+    - ipywidgets
+    - matplotlib
+    - termcolor
+    - networkx
+    - pandas
+    - torch
+    - torchvision
+    - requests
+    - scikit-learn
+    - tqdm
+    - opencv-python
+
