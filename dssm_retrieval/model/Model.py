@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
 from torch.autograd import Variable
 
-from dssm_retrieval.reader.DataLoader import config
+from dssm_retrieval.reader.ImgDataLoader import config
 
 CHAR_SIZE=21128
 EPOCH=10

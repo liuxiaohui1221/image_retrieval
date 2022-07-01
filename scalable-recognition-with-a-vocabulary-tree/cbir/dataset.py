@@ -4,6 +4,10 @@ from os import listdir
 from os.path import isfile, join
 import random
 import matplotlib.pyplot as plt
+import numpy as np
+from skimage import filters
+import pandas as pd
+from . import utils
 
 
 class Dataset():
@@ -95,6 +99,46 @@ class Dataset():
             ".tif", ".tiff",
             "pbm", ".pgm", "ppm"]
         return os.path.splitext(path)[-1] in allowed_extensions
+
+    def extract_color_hist(self, img_bgr):
+        '''按R、G、B三个通道分别计算颜色直方图'''
+        b_hist = np.histogram(img_bgr[:, :, 0].flatten(), bins=20)
+        g_hist = np.histogram(img_bgr[:, :, 1], bins=20)
+        r_hist = np.histogram(img_bgr[:, :, 2], bins=20)
+
+        final_list=b_hist[0].tolist()
+        final_list.extend(g_hist[0].tolist())
+        final_list.extend(r_hist[0].tolist())
+        tmean = np.mean(final_list)  # 求均值
+        tstd = np.std(final_list)  # 求方差
+        newfea = (final_list - tmean) / tstd  # 数值归一化
+        return newfea.tolist()
+
+    def extract_gabor(self, img,w=16,h=16):
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # 转灰度
+        # gabor变换
+        real, imag = filters.gabor(img_gray, frequency=0.6, theta=45, n_stds=5)
+        # 取模
+        img_mod = np.sqrt(real.astype(float) ** 2 + imag.astype(float) ** 2)
+        # 图像缩放（下采样）
+        newimg = cv2.resize(img_mod, (w, h), interpolation=cv2.INTER_AREA)
+        tempfea = newimg.flatten()  # 矩阵展平
+        tmean = np.mean(tempfea)  # 求均值
+        tstd = np.std(tempfea)  # 求方差
+        newfea = (tempfea - tmean) / tstd  # 数值归一化
+        return newfea.tolist()
+
+    def extract_other_features(self):
+        # 读取图片
+        other_features = {}
+        for i, imgName in enumerate(self.image_paths):
+            pic_file = join(self.path, imgName)
+            img = cv2.imread(pic_file)  # 读图像
+            color_feature = self.extract_color_hist(img)
+            gabor_feature = self.extract_gabor(img)
+            color_feature.extend(gabor_feature)
+            other_features[imgName]= color_feature
+        return other_features
 
 
 class Subset(object):

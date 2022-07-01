@@ -5,7 +5,7 @@
 from transformers import BertTokenizer
 
 from model.Model import DSSM, BATCH_SIZE, LR, EPOCH
-from reader.DataLoader import DuReaderDataset
+from reader.ImgDataLoader import ImgReaderDataset
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader,Dataset
@@ -13,15 +13,15 @@ from torch.autograd import Variable
 import os
 
 data_root='./data/train/'
-train_path=data_root+'cross.train.tsv'
-test_path=data_root+'cross.train.demo.tsv'
+train_path=data_root+'train/cross.train.tsv'
+test_path=data_root+'test/cross.test.tsv'
 
 def train():
     # 1、创建数据集并创立数据载入器
-    train_data = DuReaderDataset(train_path)
+    train_data = ImgReaderDataset(train_path)
     train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
     # test
-    test_data = DuReaderDataset(test_path)
+    test_data = ImgReaderDataset(test_path)
     test_loader = DataLoader(dataset=test_data, batch_size=BATCH_SIZE, shuffle=False)
 
     # 2、有gpu用gpu，否则cpu
@@ -73,9 +73,9 @@ def train():
 
 if __name__ == '__main__':
     # train
-    # train()
+    train()
     # test
-    test_data = DuReaderDataset(test_path)
+    test_data = ImgReaderDataset(test_path)
     test_loader=DataLoader(dataset=test_data,batch_size=BATCH_SIZE,shuffle=False)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

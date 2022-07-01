@@ -11,7 +11,7 @@ class ImgReaderDataset(Dataset):
 	def __init__(self, filepath):
 		self.path = filepath
 		self.max_seq_len=config.max_seq_len
-		self.a_index, self.b_index, self.label = self.load_char_data(self.path)
+		self.a_index, self.b_index, self.label = self.load_data(self.path)
 
 	def __len__(self):
 		return len(self.a_index)
@@ -19,26 +19,11 @@ class ImgReaderDataset(Dataset):
 	def __getitem__(self, idx):
 		return self.a_index[idx], self.b_index[idx], self.label[idx]
 
-	def char_index(self,text_a, text_b):
-		# slice2idx, idx2slice = load_vocab(vocabPath)
-		a_list, b_list = [], []
-
-		# 对文件中的每一行
-		for a_sentence, b_sentence in zip(text_a, text_b):
-			a = self.tokenizer.encode(str(a_sentence), max_length=self.max_seq_len, pad_to_max_length=True,
-								 add_special_tokens=True)
-			b = self.tokenizer.encode(str(b_sentence), max_length=self.max_seq_len, pad_to_max_length=True,
-								 add_special_tokens=True)
-			a_list.append(a)
-			b_list.append(b)
-		return a_list, b_list
-	def load_char_data(self,filename):
-		df = pd.read_csv(filename, sep='\t', names=["query", "null", "doc", "label"])
-		text_a = df['query'].values
-		text_b = df['doc'].values
+	def load_data(self,filename):
+		df=pd.read_csv(filename, sep='\t', names=["query", "target", "label"])
+		q_a = df['query'].values
+		t_b = df['target'].values
 		label = df['label'].values
-
-		a_index, b_index = self.char_index(text_a, text_b)
-		return np.array(a_index), np.array(b_index), np.array(label)
+		return np.array(q_a), np.array(t_b), np.array(label)
 
 

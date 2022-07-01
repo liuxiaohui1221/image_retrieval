@@ -16,9 +16,8 @@ class Database(object):
         else:
             raise TypeError("Invalid dataset of type %s" % type(dataset))
         self.encoder = encoder
-
+        self.database = {}
         # private:
-        self._database = {}
         self._image_ids = {}
         return
 
@@ -33,6 +32,9 @@ class Database(object):
 
         return self._image_ids[image_path]
 
+    def shuffule_image_path(self):
+        np.random.shuffle(self.dataset.image_paths)
+
     def index(self):
         """
         Generates the inverted index structure using tf-idf.
@@ -45,16 +47,16 @@ class Database(object):
 
     def is_indexed(self, image_path):
         image_id = self.get_image_id(image_path)
-        return image_id in self._database
+        return image_id in self.database
 
     def embedding(self, image_path):
         image_id = self.get_image_id(image_path)
         # check if has already been indexed
-        if image_id not in self._database:
+        if image_id not in self.database:
             # if not, calculate the embedding and index it
             image = self.dataset.read_image(image_path)
-            self._database[image_id] = self.encoder.embedding(image)
-        return self._database[image_id]
+            self.database[image_id] = self.encoder.embedding(image)
+        return self.database[image_id]
 
     def score(self, db_image_path, query_image_path):
         """
@@ -86,7 +88,7 @@ class Database(object):
 
         # store indexed vectors in hdf5
         with open(os.path.join(path, "index.pickle"), "wb") as f:
-            pickle.dump(self._database, f)
+            pickle.dump(self.database, f)
 
         return True
 
@@ -95,7 +97,7 @@ class Database(object):
         try:
             with open(os.path.join(path, "index.pickle"), "rb") as f:
                 database = pickle.load(f)
-                self._database = database
+                self.database = database
         except:
             print("Cannot load index file from %s/index.pickle" % path)
         return True
