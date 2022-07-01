@@ -62,8 +62,8 @@ keypoints = find_keypoints(img)
 # plt.figure(figsize=(15,10))
 # Only displaying every 10 keypoints
 img2 = cv2.drawKeypoints(img, keypoints[::10], None, color=(0,255,0), flags=4)
-# dataset.show_image(img2)
-# plt.show()
+dataset.show_image(img2)
+plt.show()
 
 def extract_descriptors(image, keypoints):
     ''' This function should take an image as input and return a list
@@ -83,8 +83,8 @@ print("Descriptor for the 5th keypoint:\n {}".format(features[4]))
 keypoints = find_keypoints(img)
 patches = descriptor.extract_patches(img, keypoints)
 features = extract_descriptors(img, keypoints)
-# descriptor.show_random_descriptors(img, keypoints, patches, features)
-# plt.show()
+descriptor.show_random_descriptors(img, keypoints, patches, features)
+plt.show()
 
 
 # 3.1 Building the tree using hierarchical k-means

@@ -6,8 +6,6 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage import filters
-import pandas as pd
-from . import utils
 
 
 class Dataset():
@@ -101,17 +99,24 @@ class Dataset():
         return os.path.splitext(path)[-1] in allowed_extensions
 
     def extract_color_hist(self, img_bgr):
-        '''按R、G、B三个通道分别计算颜色直方图'''
-        b_hist = np.histogram(img_bgr[:, :, 0].flatten(), bins=20)
-        g_hist = np.histogram(img_bgr[:, :, 1], bins=20)
-        r_hist = np.histogram(img_bgr[:, :, 2], bins=20)
+        b_hist = cv2.calcHist([img_bgr], [0], None, [20], [0, 255],).flatten()
+        g_hist = cv2.calcHist([img_bgr], [1], None, [20], [0, 255]).flatten()
+        r_hist = cv2.calcHist([img_bgr], [2], None, [20], [0, 255]).flatten()
 
-        final_list=b_hist[0].tolist()
-        final_list.extend(g_hist[0].tolist())
-        final_list.extend(r_hist[0].tolist())
+        final_list=b_hist.tolist()
+        final_list.extend(g_hist.tolist())
+        final_list.extend(r_hist.tolist())
         tmean = np.mean(final_list)  # 求均值
         tstd = np.std(final_list)  # 求方差
         newfea = (final_list - tmean) / tstd  # 数值归一化
+        # if show:
+        #     '''显示三个通道的颜色直方图'''
+        #     plt.hist(b_hist, label='B', color='blue')
+        #     plt.hist(g_hist, label='G', color='green')
+        #     plt.hist(r_hist, label='R', color='red')
+        #     plt.legend(loc='best')
+        #     # plt.xlim([0, 256])
+        #     plt.show()
         return newfea.tolist()
 
     def extract_gabor(self, img,w=16,h=16):
@@ -126,6 +131,18 @@ class Dataset():
         tmean = np.mean(tempfea)  # 求均值
         tstd = np.std(tempfea)  # 求方差
         newfea = (tempfea - tmean) / tstd  # 数值归一化
+        # if show:
+        #     # 图像显示
+        #     plt.figure()
+        #     plt.subplot(2, 2, 1)
+        #     plt.imshow(img_gray, cmap='gray')
+        #     plt.subplot(2, 2, 2)
+        #     plt.imshow(img_mod, cmap='gray')
+        #     plt.subplot(2, 2, 3)
+        #     plt.imshow(real, cmap='gray')
+        #     plt.subplot(2, 2, 4)
+        #     plt.imshow(imag, cmap='gray')
+        #     plt.show()
         return newfea.tolist()
 
     def extract_other_features(self):
@@ -134,6 +151,7 @@ class Dataset():
         for i, imgName in enumerate(self.image_paths):
             pic_file = join(self.path, imgName)
             img = cv2.imread(pic_file)  # 读图像
+
             color_feature = self.extract_color_hist(img)
             gabor_feature = self.extract_gabor(img)
             color_feature.extend(gabor_feature)
